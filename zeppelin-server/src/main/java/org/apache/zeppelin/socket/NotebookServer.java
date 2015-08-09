@@ -18,7 +18,6 @@
 package org.apache.zeppelin.socket;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,8 +36,8 @@ import org.apache.zeppelin.notebook.Note;
 import org.apache.zeppelin.notebook.Notebook;
 import org.apache.zeppelin.notebook.Paragraph;
 import org.apache.zeppelin.scheduler.Job;
-import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.scheduler.Job.Status;
+import org.apache.zeppelin.scheduler.JobListener;
 import org.apache.zeppelin.server.ZeppelinServer;
 import org.apache.zeppelin.socket.Message.OP;
 import org.eclipse.jetty.websocket.WebSocket;
@@ -103,6 +102,9 @@ public class NotebookServer extends WebSocketServlet implements
           case DEL_NOTE:
             removeNote(conn, notebook, messagereceived);
             break;
+          case CLONE_NOTE:
+              cloneNote(conn, notebook, messagereceived);
+              break;
           case COMMIT_PARAGRAPH:
             updateParagraph(conn, notebook, messagereceived);
             break;
@@ -377,6 +379,32 @@ public class NotebookServer extends WebSocketServlet implements
     p.setText((String) fromMessage.get("paragraph"));
     note.persist();
     broadcast(note.id(), new Message(OP.PARAGRAPH).put("paragraph", p));
+  }
+  
+  private void cloneNote(NotebookSocket conn, Notebook notebook,
+      Message fromMessage) throws IOException {
+    String noteId = getOpenNoteId(conn);
+    String name = (String) fromMessage.get("name");
+    Note sourceNote = notebook.getNote(noteId);
+    Note newNote = notebook.createNote();
+    if (name != null) {
+      newNote.setName(name);
+    }
+
+    List<Paragraph> paragraphs = sourceNote.getParagraphs();
+    for (Paragraph para : paragraphs) {
+      Paragraph p = newNote.addParagraph();
+      Map<String, Object> config = new HashMap<>(para.getConfig());
+      Map<String, Object> param = new HashMap<>(para.settings.getParams());
+      p.setConfig(config);
+      p.settings.setParams(param);
+      p.setTitle(para.getTitle());
+      p.setText(para.getText());
+    }
+
+    newNote.persist();
+    broadcastNote(newNote);
+    broadcastNoteList();
   }
 
   private void removeParagraph(NotebookSocket conn, Notebook notebook,
