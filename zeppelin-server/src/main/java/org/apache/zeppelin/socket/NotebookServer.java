@@ -393,15 +393,8 @@ public class NotebookServer extends WebSocketServlet implements
 
     List<Paragraph> paragraphs = sourceNote.getParagraphs();
     for (Paragraph para : paragraphs) {
-      Paragraph p = newNote.addParagraph();
-      Map<String, Object> config = new HashMap<>(para.getConfig());
-      Map<String, Object> param = new HashMap<>(para.settings.getParams());
-      p.setConfig(config);
-      p.settings.setParams(param);
-      p.setTitle(para.getTitle());
-      p.setText(para.getText());
+      Paragraph p = newNote.addParagraph(para);
     }
-
     newNote.persist();
     broadcastNote(newNote);
     broadcastNoteList();
