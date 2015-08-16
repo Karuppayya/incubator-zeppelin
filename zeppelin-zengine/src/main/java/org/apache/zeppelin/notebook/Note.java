@@ -140,9 +140,15 @@ public class Note implements Serializable, JobListener {
   }
 
   public Paragraph addParagraph(Paragraph para) {
-    Paragraph p = new Paragraph(this, this, replLoader);
+    Paragraph p = addParagraph();
 
     Map<String, Object> config = new HashMap<>(para.getConfig());
+    // Show the editor by default
+    String hideEditorKey = "editorHide";
+    Object object = config.get(hideEditorKey);
+    if (object != null && object == Boolean.TRUE) {
+      config.put(hideEditorKey, Boolean.FALSE);
+    }
     Map<String, Object> param = new HashMap<>(para.settings.getParams());
     p.setConfig(config);
     p.settings.setParams(param);

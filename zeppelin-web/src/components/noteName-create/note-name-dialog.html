@@ -11,7 +11,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 -->
-  <div id="noteNameModal" class="modal fade" role="dialog" modalvisible previsiblecallback="notenamectrl.preVisible()" 
+  <div id="noteNameModal" class="modal fade" role="dialog" modalvisible previsiblecallback="notenamectrl.preVisible" 
     targetinput="noteName" tabindex='-1'>
     <div class="modal-dialog">
 
@@ -31,7 +31,13 @@ limitations under the License.
         <div class="modal-footer">
           <button type="button" id="createNoteButton"
             class="btn btn-default"
+            ng-show="!notenamectrl.clone"
             data-dismiss="modal" ng-click="notenamectrl.createNote()">Create
+            Note</button>
+            <button type="button" id="createNoteButton"
+            class="btn btn-default"
+            ng-show="notenamectrl.clone"
+            data-dismiss="modal" ng-click="notenamectrl.createNote()">Clone
             Note</button>
         </div>
       </div>

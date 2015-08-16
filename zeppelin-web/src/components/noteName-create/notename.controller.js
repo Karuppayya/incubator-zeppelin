@@ -19,14 +19,18 @@ angular.module('zeppelinWebApp').controller('NotenameCtrl', function($scope, $ro
   vm.websocketMsgSrv = websocketMsgSrv;
   $scope.note = {};
   vm.createNote = function(){
-  	  var noteId = $routeParams.noteId;
-	  vm.websocketMsgSrv.createNotebook($scope.notename);
-	  $scope.note.clone = false;
+  	  if(!vm.clone){
+		  vm.websocketMsgSrv.createNotebook($scope.note.notename);
+  	  }else{
+	  	 var noteId = $routeParams.noteId;
+  	  	 vm.websocketMsgSrv.cloneNotebook(noteId, $scope.note.notename);
+  	  }
   };
-  vm.preVisible = function(){
+  vm.preVisible = function(clone){
 		var generatedName = vm.generateName();
 		$scope.note.notename = 'Note ' + generatedName;
-		$scope.$digest();
+		vm.clone = clone;
+		$scope.$apply();
   };
   vm.generateName = function () {
 		var DICTIONARY = [ '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B',

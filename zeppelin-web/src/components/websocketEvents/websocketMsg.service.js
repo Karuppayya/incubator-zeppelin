@@ -25,8 +25,8 @@ angular.module('zeppelinWebApp').service('websocketMsgSrv', function($rootScope,
       websocketEvents.sendNewEvent({op: 'DEL_NOTE', data: {id: noteId}});
     },
 
-	cloneNotebook: function(noteId) {
-      websocketEvents.sendNewEvent({op: 'CLONE_NOTE', data: {id: noteId}});
+	cloneNotebook: function(noteIdToClone, newNoteName ) {
+      websocketEvents.sendNewEvent({op: 'CLONE_NOTE', data: {id: noteIdToClone, name: newNoteName}});
     },
     getNotebookList: function() {
       websocketEvents.sendNewEvent({op: 'LIST_NOTES'});
