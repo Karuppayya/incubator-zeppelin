@@ -15,7 +15,7 @@
  */
 'use strict';
 
-angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http, websocketMsgSrv, baseUrlSrv) {
+angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $route, $routeParams, $location, $rootScope, $http, websocketMsgSrv, baseUrlSrv, $timeout) {
   $scope.note = null;
   $scope.showEditor = false;
   $scope.editorToggled = false;
@@ -35,6 +35,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.interpreterSettings = [];
   $scope.interpreterBindings = [];
+  $scope.isNoteDirty = null;  
+  $scope.saveTimer = null;
 
   var angularObjectRegistry = {};
 
@@ -86,11 +88,18 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     }
   };
 
+  $scope.saveNote = function() {
+    _.forEach($scope.note.paragraphs, function(n, key) {
+      angular.element('#' + n.id + '_paragraphColumn_main').scope().saveParagraph();
+    });
+    $scope.isNoteDirty = null;
+  };
+
   $scope.toggleAllEditor = function() {
     if ($scope.editorToggled) {
-      $scope.$broadcast('closeEditor');
-    } else {
       $scope.$broadcast('openEditor');
+    } else {
+      $scope.$broadcast('closeEditor');
     }
     $scope.editorToggled = !$scope.editorToggled;
   };
@@ -105,9 +114,9 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   $scope.toggleAllTable = function() {
     if ($scope.tableToggled) {
-      $scope.$broadcast('closeTable');
-    } else {
       $scope.$broadcast('openTable');
+    } else {
+      $scope.$broadcast('closeTable');
     }
     $scope.tableToggled = !$scope.tableToggled;
   };
@@ -132,8 +141,24 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     return running;
   };
 
+  $scope.killSaveTimer = function() {
+    if($scope.saveTimer){
+      $timeout.cancel($scope.saveTimer);
+      $scope.saveTimer = null;
+    }
+  };
+
+  $scope.startSaveTimer = function() {
+    $scope.killSaveTimer();
+    $scope.isNoteDirty = true;
+    console.log('startSaveTimer called ' + $scope.note.id);
+    $scope.saveTimer = $timeout(function(){
+      $scope.saveNote();
+    }, 10000);
+  };
+
   $scope.setLookAndFeel = function(looknfeel) {
-    $scope.note.config.looknfeel = looknfeel;
+    $scope.note.config.looknfeel = looknfeel;    
     $scope.setConfig();
   };
 
@@ -365,8 +390,11 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
 
   var getInterpreterBindingsCallBack = function() {
     var selected = false;
-    for (var i in $scope.interpreterBindings) {
-      var setting = $scope.interpreterBindings[i];
+    var key;
+    var setting;
+
+    for (key in $scope.interpreterBindings) {
+      setting = $scope.interpreterBindings[key];
       if (setting.selected) {
         selected = true;
         break;
@@ -376,8 +404,8 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
     if (!selected) {
       // make default selection
       var selectedIntp = {};
-      for (var i in $scope.interpreterBindings) {
-        var setting = $scope.interpreterBindings[i];
+      for (key in $scope.interpreterBindings) {
+        setting = $scope.interpreterBindings[key];
         if (!selectedIntp[setting.group]) {
           setting.selected = true;
           selectedIntp[setting.group] = true;
@@ -473,7 +501,6 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       }
       scope[varName] = data.angularObject.object;
     }
-      
   });
 
   $scope.$on('angularObjectRemove', function(event, data) {
@@ -491,10 +518,5 @@ angular.module('zeppelinWebApp').controller('NotebookCtrl', function($scope, $ro
       scope[varName] = undefined;
     }
   });
-
-  var isFunction = function(functionToCheck) {
-    var getType = {};
-    return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
-  };
 
 });
