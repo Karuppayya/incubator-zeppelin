@@ -67,15 +67,18 @@ public class ShellInterpreter extends Interpreter {
     cmdLine.addArgument(cmd, false);
     DefaultExecutor executor = new DefaultExecutor();
     ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-    executor.setStreamHandler(new PumpStreamHandler(outputStream));
-
-    executor.setWatchdog(new ExecuteWatchdog(commandTimeOut));
+    ByteArrayOutputStream errorStream = new ByteArrayOutputStream();
+    executor.setStreamHandler(new PumpStreamHandler(outputStream, errorStream));
+    
+    ExecuteWatchdog executeWatchdog = new ExecuteWatchdog(commandTimeOut);
+    
+    executor.setWatchdog(executeWatchdog);
     try {
       int exitValue = executor.execute(cmdLine);
       return new InterpreterResult(InterpreterResult.Code.SUCCESS, outputStream.toString());
     } catch (ExecuteException e) {
       logger.error("Can not run " + cmd, e);
-      return new InterpreterResult(Code.ERROR, e.getMessage());
+      return new InterpreterResult(Code.ERROR, errorStream.toString());
     } catch (IOException e) {
       logger.error("Can not run " + cmd, e);
       return new InterpreterResult(Code.ERROR, e.getMessage());
@@ -83,7 +86,9 @@ public class ShellInterpreter extends Interpreter {
   }
 
   @Override
-  public void cancel(InterpreterContext context) {}
+  public void cancel(InterpreterContext context) {
+	  
+  }
 
   @Override
   public FormType getFormType() {
