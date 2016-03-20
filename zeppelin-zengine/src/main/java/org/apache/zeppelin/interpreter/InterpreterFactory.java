@@ -243,7 +243,6 @@ public class InterpreterFactory {
           setting.getProperties(),
           setting.getDependencies(),
           setting.getOption());
-
       InterpreterGroup interpreterGroup = createInterpreterGroup(setting.id(), setting.getOption());
       intpSetting.setInterpreterGroup(interpreterGroup);
 
@@ -400,10 +399,6 @@ public class InterpreterFactory {
           dependencies,
           option);
 
-      if (dependencies.size() > 0) {
-        loadInterpreterDependencies(intpSetting);
-      }
-
       InterpreterGroup interpreterGroup = createInterpreterGroup(intpSetting.id(), option);
 
       intpSetting.setInterpreterGroup(interpreterGroup);
@@ -486,6 +481,13 @@ public class InterpreterFactory {
           logger.debug(e.getMessage(), e);
         }
       }
+    }
+
+    try {
+      loadInterpreterDependencies(interpreterSetting);
+    } catch (IOException | RepositoryException e1) {
+      logger.error("Unable to load dependencies for interpretersetting:"
+          + interpreterSetting.getName(), e1);
     }
 
     logger.info("Create interpreter instance {} for note {}", interpreterSetting.getName(), noteId);
@@ -672,7 +674,6 @@ public class InterpreterFactory {
         InterpreterGroup interpreterGroup = createInterpreterGroup(intpsetting.id(), option);
         intpsetting.setInterpreterGroup(interpreterGroup);
 
-        loadInterpreterDependencies(intpsetting);
         saveToFile();
       } else {
         throw new InterpreterException("Interpreter setting id " + id
