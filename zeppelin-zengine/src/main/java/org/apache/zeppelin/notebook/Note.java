@@ -513,4 +513,12 @@ public class Note implements Serializable, JobListener {
   @Override
   public void onProgressUpdate(Job job, int progress) {}
 
+  public void updateIndex(){
+    try {
+      index.updateIndexDoc(this);
+    } catch (IOException e) {
+      logger.error("Unable to update index", e);
+    }
+  }
+
 }

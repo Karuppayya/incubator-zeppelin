@@ -1087,7 +1087,7 @@ public class NotebookServer extends WebSocketServlet implements
           LOG.error("Error", job.getException());
         }
       }
-
+      note.updateIndex();
       if (job.isTerminated()) {
         LOG.info("Job {} is finished", job.getId());
         try {

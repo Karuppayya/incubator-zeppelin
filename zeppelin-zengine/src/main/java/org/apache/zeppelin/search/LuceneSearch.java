@@ -70,6 +70,7 @@ public class LuceneSearch implements SearchService {
   private static final Logger LOG = LoggerFactory.getLogger(LuceneSearch.class);
 
   private static final String SEARCH_FIELD = "contents";
+  private static final String STATUS_FIELD = "status";
   static final String PARAGRAPH = "paragraph";
   static final String ID_FIELD = "id";
 
@@ -149,7 +150,7 @@ public class LuceneSearch implements SearchService {
               LOG.debug("    Fragment: {}", frag[j].toString());
             }
           }
-          String fragment = (frag != null && frag.length > 0) ? frag[0].toString() : "";
+          String fragment = (frag != null && frag.length > 0) ? frag[0].toString() : text;
 
           matchingParagraphs.add(ImmutableMap.of("id", path, // <noteId>/paragraph/<paragraphId>
               "name", title, "snippet", fragment, "text", text));
@@ -255,6 +256,7 @@ public class LuceneSearch implements SearchService {
       doc.add(new TextField(SEARCH_FIELD, p.getText(), Field.Store.YES));
       Date date = p.getDateStarted() != null ? p.getDateStarted() : p.getDateCreated();
       doc.add(new LongField("modified", date.getTime(), Field.Store.NO));
+      doc.add(new TextField(STATUS_FIELD, p.getStatus().toString(), Field.Store.YES));
     } else {
       doc.add(new TextField(SEARCH_FIELD, noteName, Field.Store.YES));
     }
