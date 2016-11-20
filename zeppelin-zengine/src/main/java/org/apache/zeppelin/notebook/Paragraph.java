@@ -61,6 +61,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   Date dateUpdated;
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
   public final GUI settings;          // form and parameter settings
+  private Map<String, Set<String>> runtimeInfos;
 
   /**
    * Applicaiton states in this paragraph
@@ -594,5 +595,26 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   private boolean isValidInterpreter(String replName) {
     return factory.getInterpreter(user,
         note.getId(), replName) != null;
+  }
+
+  public void updateRuntimeInfos(Map<String, String> infos) {
+    if (this.runtimeInfos == null) {
+      this.runtimeInfos = new HashMap<String, Set<String>>();
+    }
+
+    if (infos != null) {
+      for (String key : infos.keySet()) {
+        Set<String> values = this.runtimeInfos.get(key);
+        if (values == null) {
+          values = new HashSet<>();
+          this.runtimeInfos.put(key, values);
+        }
+        values.add(infos.get(key));
+      }
+    }
+  }
+
+  public void clearRuntimeInfo() {
+    this.runtimeInfos = null;
   }
 }

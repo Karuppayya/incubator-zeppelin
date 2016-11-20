@@ -1646,7 +1646,8 @@
            isEmpty(data.paragraph.result) !== isEmpty($scope.paragraph.result) ||
            data.paragraph.errorMessage !== $scope.paragraph.errorMessage ||
            !angular.equals(data.paragraph.settings, $scope.paragraph.settings) ||
-           !angular.equals(data.paragraph.config, $scope.paragraph.config))
+           !angular.equals(data.paragraph.config, $scope.paragraph.config) ||
+           !angular.equals(data.paragraph.runtimeInfos, $scope.paragraph.runtimeInfos))
          ) {
 
         var oldType = $scope.getResultType();
@@ -1694,6 +1695,8 @@
         $scope.paragraph.status = data.paragraph.status;
         $scope.paragraph.result = data.paragraph.result;
         $scope.paragraph.settings = data.paragraph.settings;
+        $scope.paragraph.runtimeInfos = data.paragraph.runtimeInfos;
+        console.log(data.paragraph.runtimeInfos);
         $scope.editor.setReadOnly($scope.isRunning());
 
         if (!$scope.asIframe) {
