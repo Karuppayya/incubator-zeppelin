@@ -290,11 +290,11 @@ public class InterpreterSetting {
   }
 
   public void addNoteToPara(String noteId, String paraId) {
-    if(noteIdToParaIdsetMap == null) {
-      noteIdToParaIdsetMap =  new HashMap<>();
+    if (noteIdToParaIdsetMap == null) {
+      noteIdToParaIdsetMap = new HashMap<>();
     }
     Set<String> paraIdSet = noteIdToParaIdsetMap.get(noteId);
-    if(paraIdSet == null) {
+    if (paraIdSet == null) {
       paraIdSet = new HashSet<>();
       noteIdToParaIdsetMap.put(noteId, paraIdSet);
     }
