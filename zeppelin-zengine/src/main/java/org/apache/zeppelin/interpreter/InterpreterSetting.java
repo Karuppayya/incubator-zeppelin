@@ -304,4 +304,8 @@ public class InterpreterSetting {
   public Map<String, Set<String>> getNoteIdAndParaMap() {
     return noteIdToParaIdsetMap;
   }
+
+  public void clearNoteIdAndParaMap() {
+    noteIdToParaIdsetMap = null;
+  }
 }
