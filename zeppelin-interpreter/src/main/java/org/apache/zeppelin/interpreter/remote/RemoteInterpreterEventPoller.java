@@ -25,6 +25,7 @@ import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.helium.ApplicationEventListener;
 import org.apache.zeppelin.interpreter.InterpreterContextRunner;
 import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterOption;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEvent;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterEventType;
 import org.apache.zeppelin.interpreter.thrift.RemoteInterpreterService.Client;
@@ -200,9 +201,11 @@ public class RemoteInterpreterEventPoller extends Thread {
               new TypeToken<Map<String, String>>() {
               }.getType());
           String id = interpreterGroup.getId();
-          int indexOfColon = id.indexOf(":");
-          String settingId = id.substring(0, indexOfColon);
-          listener.onMetaInfosReceived(settingId, metaInfos);
+          if(id.endsWith("shared_process")) {
+            int indexOfColon = id.indexOf(":");
+            String settingId = id.substring(0, indexOfColon);
+            listener.onMetaInfosReceived(settingId, metaInfos);
+          }
         }
         logger.debug("Event from remoteproceess {}", event.getType());
       } catch (Exception e) {
