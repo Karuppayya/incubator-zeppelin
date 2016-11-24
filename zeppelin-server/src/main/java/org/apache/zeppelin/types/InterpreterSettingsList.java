@@ -29,12 +29,14 @@ public class InterpreterSettingsList {
   private String name;
   private boolean selected;
   private List<InterpreterInfo> interpreters;
+  private String group;
 
   public InterpreterSettingsList(String id, String name,
-      List<InterpreterInfo> interpreters, boolean selected) {
+      List<InterpreterInfo> interpreters, boolean selected, String group) {
     this.id = id;
     this.name = name;
     this.interpreters = interpreters;
     this.selected = selected;
+    this.group = group;
   }
 }

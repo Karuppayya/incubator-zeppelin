@@ -14,15 +14,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.apache.zeppelin.interpreter.remote;
 
-import java.util.Map;
+package org.apache.zeppelin.rest.message;
 
 /**
- * Event from remoteInterpreterProcess
+ * Meta infos  rest api request message
  */
-public interface RemoteInterpreterProcessListener {
-  public void onOutputAppend(String noteId, String paragraphId, String output);
-  public void onOutputUpdated(String noteId, String paragraphId, String output);
-  public void onMetaInfosReceived(String settingId, String intpGroupId, Map<String, String> metaInfos);
+public class MetaInfosInterpreterRequest {
+  String noteId;
+  String subject;
+  String property;
+
+  public MetaInfosInterpreterRequest() {
+
+  }
+
+  public String getNoteId() {
+    return noteId;
+  }
+
+  public String getSubject() {
+    return subject;
+  }
+
+  public String getProperty() {
+    return property;
+  }
 }
