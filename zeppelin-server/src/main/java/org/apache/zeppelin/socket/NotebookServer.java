@@ -1870,7 +1870,9 @@ public class NotebookServer extends WebSocketServlet implements
         setting.addNoteToPara(noteId, paragraphId);
         metaInfos.remove("noteId");
         metaInfos.remove("paraId");
-        paragraph.updateRuntimeInfos(metaInfos);
+        String label = metaInfos.get("label");
+        metaInfos.remove("label");
+        paragraph.updateRuntimeInfos(label, metaInfos, setting.getGroup());
         broadcast(note.getId(), new Message(OP.PARAGRAPH).put("paragraph", paragraph));
       }
     }

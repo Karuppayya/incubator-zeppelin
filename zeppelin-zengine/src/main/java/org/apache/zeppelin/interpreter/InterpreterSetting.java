@@ -117,7 +117,7 @@ public class InterpreterSetting {
     return name;
   }
 
-  String getGroup() {
+  public String getGroup() {
     return group;
   }
 

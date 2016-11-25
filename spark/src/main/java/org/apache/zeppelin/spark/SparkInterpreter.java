@@ -172,6 +172,7 @@ public class SparkInterpreter extends Interpreter {
           RemoteEventClientWrapper eventClient = ZeppelinContext.getEventClient();
           Map<String, String> infos = new java.util.HashMap<>();
           infos.put("jobUrl", jobUrl);
+          infos.put("label", "SPARK JOB");
           if (eventClient != null) {
             eventClient.onParaInfosReceived(noteId, paragraphId, infos);
           }
@@ -1136,10 +1137,6 @@ public class SparkInterpreter extends Interpreter {
     return obj;
   }
 
-  String getJobGroup(InterpreterContext context) {
-    return "zeppelin-" + context.getNoteId() + "-" + context.getParagraphId();
-  }
-
   /**
    * Interpret a single line.
    */
@@ -1160,7 +1157,7 @@ public class SparkInterpreter extends Interpreter {
   public InterpreterResult interpret(String[] lines, InterpreterContext context) {
     synchronized (this) {
       z.setGui(context.getGui());
-      sc.setJobGroup(getJobGroup(context), "Zeppelin", false);
+      sc.setJobGroup(Utils.buildJobGroupId(context), "Zeppelin", false);
       InterpreterResult r = interpretInput(lines, context);
       sc.clearJobGroup();
       return r;
@@ -1283,12 +1280,12 @@ public class SparkInterpreter extends Interpreter {
 
   @Override
   public void cancel(InterpreterContext context) {
-    sc.cancelJobGroup(getJobGroup(context));
+    sc.cancelJobGroup(Utils.buildJobGroupId(context));
   }
 
   @Override
   public int getProgress(InterpreterContext context) {
-    String jobGroup = getJobGroup(context);
+    String jobGroup = Utils.buildJobGroupId(context);
     int completedTasks = 0;
     int totalTasks = 0;
 

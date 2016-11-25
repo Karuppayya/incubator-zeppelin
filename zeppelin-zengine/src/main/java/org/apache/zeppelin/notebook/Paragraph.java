@@ -61,7 +61,7 @@ public class Paragraph extends Job implements Serializable, Cloneable {
   Date dateUpdated;
   private Map<String, Object> config; // paragraph configs like isOpen, colWidth, etc
   public final GUI settings;          // form and parameter settings
-  private Map<String, Set<String>> runtimeInfos;
+  private Map<String, ParagraphRuntimeInfos> runtimeInfos;
 
   /**
    * Applicaiton states in this paragraph
@@ -597,19 +597,19 @@ public class Paragraph extends Job implements Serializable, Cloneable {
         note.getId(), replName) != null;
   }
 
-  public void updateRuntimeInfos(Map<String, String> infos) {
+  public void updateRuntimeInfos(String label, Map<String, String> infos, String group) {
     if (this.runtimeInfos == null) {
-      this.runtimeInfos = new HashMap<String, Set<String>>();
+      this.runtimeInfos = new HashMap<String, ParagraphRuntimeInfos>();
     }
 
     if (infos != null) {
       for (String key : infos.keySet()) {
-        Set<String> values = this.runtimeInfos.get(key);
-        if (values == null) {
-          values = new HashSet<>();
-          this.runtimeInfos.put(key, values);
+        ParagraphRuntimeInfos info = this.runtimeInfos.get(key);
+        if (info == null) {
+          info = new ParagraphRuntimeInfos(key, label, group);
+          this.runtimeInfos.put(key, info);
         }
-        values.add(infos.get(key));
+        info.addValue(infos.get(key));
       }
     }
   }
