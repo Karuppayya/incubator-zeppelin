@@ -56,6 +56,7 @@ enum RemoteInterpreterEventType {
   APP_STATUS_UPDATE = 12,
   META_INFOS = 13,
   REMOTE_ZEPPELIN_SERVER_RESOURCE = 14
+  PARA_INFOS = 15
 }
 
 

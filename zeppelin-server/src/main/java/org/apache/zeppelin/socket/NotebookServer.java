@@ -2021,4 +2021,46 @@ public class NotebookServer extends WebSocketServlet implements
       }
     }
   }
+
+  @Override
+  public void onParaInfosReceived(String noteId, String paragraphId,
+      String interpreterSettingId, Map<String, String> metaInfos) {
+    Note note = notebook().getNote(noteId);
+    if (note != null) {
+      Paragraph paragraph = note.getParagraph(paragraphId);
+      if (paragraph != null) {
+        InterpreterSetting setting = notebook().getInterpreterFactory()
+                                               .get(interpreterSettingId);
+        setting.addNoteToPara(noteId, paragraphId);
+        metaInfos.remove("noteId");
+        metaInfos.remove("paraId");
+        String label = metaInfos.get("label");
+        metaInfos.remove("label");
+        paragraph.updateRuntimeInfos(label, metaInfos, setting.getGroup(), setting.getId());
+        broadcast(note.getId(), new Message(OP.PARAGRAPH).put("paragraph", paragraph));
+      }
+    }
+  }
+
+  public void clearParagraphRuntimeInfo(InterpreterSetting setting) {
+    Map<String, Set<String>> noteIdAndParaMap = setting.getNoteIdAndParaMap();
+    if (noteIdAndParaMap != null && !noteIdAndParaMap.isEmpty()) {
+      for (String noteId : noteIdAndParaMap.keySet()) {
+        Set<String> paraIdSet = noteIdAndParaMap.get(noteId);
+        if (paraIdSet != null && !paraIdSet.isEmpty()) {
+          for (String paraId : paraIdSet) {
+            Note note = notebook().getNote(noteId);
+            if (note != null) {
+              Paragraph paragraph = note.getParagraph(paraId);
+              if (paragraph != null) {
+                paragraph.clearRuntimeInfo(setting.getId());
+                broadcast(noteId, new Message(OP.PARAGRAPH).put("paragraph", paragraph));
+              }
+            }
+          }
+        }
+      }
+    }
+    setting.clearNoteIdAndParaMap();
+  }
 }

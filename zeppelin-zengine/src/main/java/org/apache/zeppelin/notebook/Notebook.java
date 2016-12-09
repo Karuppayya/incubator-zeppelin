@@ -463,6 +463,7 @@ public class Notebook implements NoteEventListener {
       if (p.getDateFinished() != null && lastUpdatedDate.before(p.getDateFinished())) {
         lastUpdatedDate = p.getDateFinished();
       }
+      p.clearRuntimeInfo(null);
     }
 
     Map<String, List<AngularObject>> savedObjects = note.getAngularObjects();

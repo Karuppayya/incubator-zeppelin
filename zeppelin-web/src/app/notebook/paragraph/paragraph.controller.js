@@ -955,7 +955,8 @@
            isEmpty(data.paragraph.results) !== isEmpty($scope.paragraph.results) ||
            data.paragraph.errorMessage !== $scope.paragraph.errorMessage ||
            !angular.equals(data.paragraph.settings, $scope.paragraph.settings) ||
-           !angular.equals(data.paragraph.config, $scope.paragraph.config))
+           !angular.equals(data.paragraph.config, $scope.paragraph.config) ||
+           !angular.equals(data.paragraph.runtimeInfos, $scope.paragraph.runtimeInfos))
          ) {
         var statusChanged = (data.paragraph.status !== $scope.paragraph.status);
         var resultRefreshed = (data.paragraph.dateFinished !== $scope.paragraph.dateFinished) ||
@@ -1011,7 +1012,8 @@
         $scope.paragraph.status = data.paragraph.status;
         $scope.paragraph.results = data.paragraph.results;
         $scope.paragraph.settings = data.paragraph.settings;
-        $scope.editor.setReadOnly($scope.isRunning(data.paragraph));
+        $scope.paragraph.runtimeInfos = data.paragraph.runtimeInfos;
+        $scope.editor.setReadOnly($scope.isRunning());
 
         if (!$scope.asIframe) {
           $scope.paragraph.config = data.paragraph.config;
