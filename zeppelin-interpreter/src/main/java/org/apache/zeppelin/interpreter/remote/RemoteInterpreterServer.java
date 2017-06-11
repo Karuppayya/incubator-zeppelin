@@ -18,9 +18,11 @@
 package org.apache.zeppelin.interpreter.remote;
 
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -34,7 +36,6 @@ import org.apache.zeppelin.display.*;
 import org.apache.zeppelin.helium.*;
 import org.apache.zeppelin.interpreter.*;
 import org.apache.zeppelin.interpreter.InterpreterHookRegistry.HookType;
-import org.apache.zeppelin.interpreter.InterpreterHookListener;
 import org.apache.zeppelin.interpreter.InterpreterResult.Code;
 import org.apache.zeppelin.interpreter.thrift.*;
 import org.apache.zeppelin.resource.*;
@@ -48,6 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 
 /**
@@ -57,7 +59,7 @@ import com.google.gson.reflect.TypeToken;
 public class RemoteInterpreterServer
   extends Thread
   implements RemoteInterpreterService.Iface, AngularObjectRegistryListener {
-  Logger logger = LoggerFactory.getLogger(RemoteInterpreterServer.class);
+  private static Logger logger = LoggerFactory.getLogger(RemoteInterpreterServer.class);
 
   InterpreterGroup interpreterGroup;
   AngularObjectRegistry angularObjectRegistry;
@@ -144,10 +146,13 @@ public class RemoteInterpreterServer
       throws TTransportException, InterruptedException {
 
     int port = Constants.ZEPPELIN_INTERPRETER_DEFAUlT_PORT;
-    if (args.length > 0) {
-      port = Integer.parseInt(args[0]);
+    try {
+      port = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
+    } catch (IOException e) {
+      logger.error("Exception when trying to get available port", e);
     }
     RemoteInterpreterServer remoteInterpreterServer = new RemoteInterpreterServer(port);
+    sendThriftServerInfoToZeppelinServer(port);
     remoteInterpreterServer.start();
     remoteInterpreterServer.join();
     System.exit(0);
@@ -1184,4 +1189,40 @@ public class RemoteInterpreterServer
       this.paragraphId = paragraphId;
     }
   };
+
+  private static void sendThriftServerInfoToZeppelinServer(int thriftPort) {
+    try {
+      String host = System.getenv("server_host");
+      String port = System.getenv("server_port");
+      String groupName = System.getenv("group_name");
+      String noteId = System.getenv("note_id");
+      String userName = System.getenv("user_name");
+
+      if (host == null || host.isEmpty()) {
+        host = "localhost";
+      }
+      String url = "http://" + host + ":" + port + "/api/interpreter/port";
+      HttpURLConnection connection = (HttpURLConnection) (new URL(url)).openConnection();
+      connection.setRequestProperty("Content-Type", "application/octet-stream");
+      connection.setRequestMethod("POST");
+      connection.setDoOutput(true);
+
+      JsonObject jsonObject = new JsonObject();
+      jsonObject.addProperty("name", groupName);
+      jsonObject.addProperty("port", thriftPort);
+      jsonObject.addProperty("note_id", noteId);
+      jsonObject.addProperty("user_name", userName);
+
+      OutputStreamWriter out = new OutputStreamWriter(connection.getOutputStream());
+      out.write(jsonObject.toString());
+      out.flush();
+      out.close();
+      int responseCode = connection.getResponseCode();
+      if (responseCode == 200) {
+        logger.info("ZEP-423 Sent port info successfully");
+      }
+    } catch (IOException e) {
+      logger.info("Exception while sending info back to server", e);
+    }
+  }
 }

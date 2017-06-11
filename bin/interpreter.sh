@@ -20,7 +20,7 @@ bin=$(dirname "${BASH_SOURCE-$0}")
 bin=$(cd "${bin}">/dev/null; pwd)
 
 function usage() {
-    echo "usage) $0 -p <port> -d <interpreter dir to load> -l <local interpreter repo dir to load> -g <interpreter group name>"
+    echo "usage) $0  -d <interpreter dir to load> -l <local interpreter repo dir to load> -g <interpreter group name>"
 }
 
 while getopts "hp:d:l:v:u:g:" o; do
@@ -31,9 +31,6 @@ while getopts "hp:d:l:v:u:g:" o; do
             ;;
         d)
             INTERPRETER_DIR=${OPTARG}
-            ;;
-        p)
-            PORT=${OPTARG}
             ;;
         l)
             LOCAL_INTERPRETER_REPO=${OPTARG}

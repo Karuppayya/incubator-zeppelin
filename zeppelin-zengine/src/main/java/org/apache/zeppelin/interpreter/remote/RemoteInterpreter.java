@@ -20,6 +20,7 @@ package org.apache.zeppelin.interpreter.remote;
 import java.util.*;
 
 import org.apache.thrift.TException;
+import org.apache.zeppelin.conf.ZeppelinConfiguration;
 import org.apache.zeppelin.display.AngularObject;
 import org.apache.zeppelin.display.AngularObjectRegistry;
 import org.apache.zeppelin.display.GUI;
@@ -89,6 +90,29 @@ public class RemoteInterpreter extends Interpreter {
     this.isUserImpersonate = isUserImpersonate;
     this.outputLimit = outputLimit;
     this.interpreterGroupName = interpreterGroupName;
+    populateZeppelinServerHostAndPort(env);
+  }
+
+
+  private void populateZeppelinServerHostAndPort(Map<String, String> env2) {
+    ZeppelinConfiguration conf = ZeppelinConfiguration.create();
+    String serverAddress = conf.getServerAddress();
+    int port = conf.getServerPort();
+    env.put("server_host", serverAddress);
+    env.put("server_port", port + "");
+    env.put("group_name", interpreterGroupName);
+    if (!"shared_session".equalsIgnoreCase(sessionKey)) {
+      if (userName != null && !userName.isEmpty()) {
+        env.put("user", userName);
+        int indexOf = sessionKey.indexOf(":");
+        if (indexOf != -1) {
+          String noteId = sessionKey.substring(indexOf);
+          env.put("note_id", noteId);
+        }
+      } else {
+        env.put("note_id", sessionKey);
+      }
+    }
   }
 
 
@@ -146,6 +170,7 @@ public class RemoteInterpreter extends Interpreter {
         env.put((String) key, property.getProperty((String) key));
       }
     }
+    
     return env;
   }
 

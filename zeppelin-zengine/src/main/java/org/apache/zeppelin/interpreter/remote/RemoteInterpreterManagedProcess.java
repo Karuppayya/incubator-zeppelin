@@ -28,6 +28,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This class manages start / stop of remote interpreter process
@@ -47,6 +49,8 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   private final String interpreterGroupName;
 
   private Map<String, String> env;
+
+  private CountDownLatch startedLatch = new CountDownLatch(1);
 
   public RemoteInterpreterManagedProcess(
       String intpRunner,
@@ -95,17 +99,9 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
   @Override
   public void start(String userName, Boolean isUserImpersonate) {
     // start server process
-    try {
-      port = RemoteInterpreterUtils.findRandomAvailablePortOnAllLocalInterfaces();
-    } catch (IOException e1) {
-      throw new InterpreterException(e1);
-    }
-
     CommandLine cmdLine = CommandLine.parse(interpreterRunner);
     cmdLine.addArgument("-d", false);
     cmdLine.addArgument(interpreterDir, false);
-    cmdLine.addArgument("-p", false);
-    cmdLine.addArgument(Integer.toString(port), false);
     if (isUserImpersonate && !userName.equals("anonymous")) {
       cmdLine.addArgument("-u", false);
       cmdLine.addArgument(userName, false);
@@ -137,34 +133,11 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
       throw new InterpreterException(e);
     }
 
-
-    long startTime = System.currentTimeMillis();
-    while (System.currentTimeMillis() - startTime < getConnectTimeout()) {
-      if (!running) {
-        try {
-          cmdOut.flush();
-        } catch (IOException e) {
-          // nothing to do
-        }
-        throw new InterpreterException(new String(cmdOut.toByteArray()));
-      }
-
-      try {
-        if (RemoteInterpreterUtils.checkIfRemoteEndpointAccessible("localhost", port)) {
-          break;
-        } else {
-          try {
-            Thread.sleep(500);
-          } catch (InterruptedException e) {
-            logger.error("Exception in RemoteInterpreterProcess while synchronized reference " +
-                    "Thread.sleep", e);
-          }
-        }
-      } catch (Exception e) {
-        if (logger.isDebugEnabled()) {
-          logger.debug("Remote interpreter not yet accessible at localhost:" + port);
-        }
-      }
+    try {
+      startedLatch.await(getConnectTimeout(), TimeUnit.MILLISECONDS);
+      logger.info("Remote server started");
+    } catch (InterruptedException e) {
+      logger.error("Error occured", e);
     }
     processOutput.setOutputStream(null);
   }
@@ -243,5 +216,11 @@ public class RemoteInterpreterManagedProcess extends RemoteInterpreterProcess
         this.out = out;
       }
     }
+  }
+
+  @Override
+  public void serverStarted(int port) {
+    this.port = port;
+    startedLatch.countDown();
   }
 }

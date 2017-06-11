@@ -275,4 +275,8 @@ public class InterpreterGroup extends ConcurrentHashMap<String, List<Interpreter
   public void setAngularRegistryPushed(boolean angularRegistryPushed) {
     this.angularRegistryPushed = angularRegistryPushed;
   }
+
+  public void serverCreated(int port) {
+    remoteInterpreterProcess.serverStarted(port);
+  }
 }

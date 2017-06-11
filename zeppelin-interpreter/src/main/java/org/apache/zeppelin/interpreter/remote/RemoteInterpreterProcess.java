@@ -239,4 +239,7 @@ public abstract class RemoteInterpreterProcess {
   public InterpreterContextRunnerPool getInterpreterContextRunnerPool() {
     return interpreterContextRunnerPool;
   }
+
+  public void serverStarted(int port) {
+  }
 }

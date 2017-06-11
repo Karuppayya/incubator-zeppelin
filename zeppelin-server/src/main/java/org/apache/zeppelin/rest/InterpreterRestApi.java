@@ -35,24 +35,25 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import com.google.gson.Gson;
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.apache.zeppelin.annotation.ZeppelinApi;
+import org.apache.zeppelin.dep.Repository;
+import org.apache.zeppelin.interpreter.InterpreterException;
+import org.apache.zeppelin.interpreter.InterpreterGroup;
+import org.apache.zeppelin.interpreter.InterpreterSetting;
 import org.apache.zeppelin.interpreter.InterpreterSettingManager;
+import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
 import org.apache.zeppelin.rest.message.RestartInterpreterRequest;
+import org.apache.zeppelin.rest.message.UpdateInterpreterSettingRequest;
+import org.apache.zeppelin.server.JsonResponse;
+import org.apache.zeppelin.socket.NotebookServer;
 import org.apache.zeppelin.utils.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sonatype.aether.repository.RemoteRepository;
 
-import org.apache.zeppelin.annotation.ZeppelinApi;
-import org.apache.zeppelin.dep.Repository;
-import org.apache.zeppelin.interpreter.InterpreterException;
-import org.apache.zeppelin.interpreter.InterpreterFactory;
-import org.apache.zeppelin.interpreter.InterpreterSetting;
-import org.apache.zeppelin.rest.message.NewInterpreterSettingRequest;
-import org.apache.zeppelin.rest.message.UpdateInterpreterSettingRequest;
-import org.apache.zeppelin.server.JsonResponse;
-import org.apache.zeppelin.socket.NotebookServer;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 /**
  * Interpreter Rest API
@@ -294,5 +295,29 @@ public class InterpreterRestApi {
           ExceptionUtils.getStackTrace(e)).build();
     }
     return new JsonResponse(Status.OK).build();
+  }
+
+  @POST
+  @Path("port")
+  public Response interpreterStarted(String req) {
+    HashMap<String, String> infosMap = gson.fromJson(req, new TypeToken<HashMap<String, String>>() {
+    }.getType());
+
+    String name = infosMap.get("name");
+    String portStr = infosMap.get("port");
+    int port = Integer.parseInt(portStr);
+    String noteId = infosMap.get("note_id");
+    String userName = infosMap.get("user_name");
+    List<InterpreterSetting> settings = interpreterSettingManager.get();
+    InterpreterSetting intpSetting = null;
+    for (InterpreterSetting setting : settings) {
+      if (setting.getName().equalsIgnoreCase(name)) {
+        intpSetting = setting;
+        break;
+      }
+    }
+    InterpreterGroup interpreterGroup = intpSetting.getInterpreterGroup(userName, noteId);
+    interpreterGroup.serverCreated(port);
+    return new JsonResponse<>(Response.Status.OK).build();
   }
 }
